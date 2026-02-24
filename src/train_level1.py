@@ -22,20 +22,11 @@ DATA_PATH = "../data/snapshot.csv"
 RANDOM_STATE = 42
 
 
-def load_snapshot(path: str) -> pd.DataFrame:
-    df = pd.read_csv(path) # Legge lo snapshot csv e carica i dati in un DataFrame
-    # Scansiona il Data Frame df per vedere se sono presenti le colonne "Sepsis_Label" e "Macro_Label"
-    required = {"SepsisLabel", "macro_label"}
-    missing = required - set(df.columns)
+from preprocessing import load_snapshot, split_train_test, split_level1
 
-    if missing:
-        raise ValueError(f"Mancano colonne richieste nello snapshot: {missing}")
-    return df
-
-
-def split_data(df: pd.DataFrame):
-    # Split stratificato per preservare la distribuzione delle classi (preserva anche l'1% di Sepsi)
-    return train_test_split(df, test_size=0.2, stratify=df["macro_label"],random_state=RANDOM_STATE)
+df = load_snapshot("../data/snapshot.csv")
+train_df, test_df = split_train_test(df)
+X_train, y_train, X_test, y_test = split_level1(train_df, test_df)
 
 def build_models():
     # Sostituisce i valori NaN con la mediana della colonna
@@ -86,7 +77,7 @@ def evaluate_model(name, model, X_test, y_test):
 def main():
     df = load_snapshot(DATA_PATH)
 
-    train_df, test_df = split_data(df)
+    train_df, test_df = split_train_test(df)
 
     # Level 1 Solo Sepsi
     X_train = train_df.drop(columns=["SepsisLabel", "macro_label"])
