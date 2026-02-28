@@ -8,7 +8,7 @@ from sklearn.tree import DecisionTreeClassifier
 from preprocessing import load_snapshot, split_train_test, split_level1
 from utils import eval_binary, best_threshold_f1
 
-DATA_PATH = "../data/snapshot.csv"
+DATA_PATH = "/data/snapshot.csv"
 RANDOM_STATE = 42
 
 

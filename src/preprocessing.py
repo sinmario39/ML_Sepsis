@@ -1,10 +1,17 @@
+import os
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
 RANDOM_STATE = 42
 
 # Caricamento snapshot
+# Reinterpreta il path rispetto alla root del progetto
 def load_snapshot(path: str) -> pd.DataFrame:
+    if not os.path.isabs(path):
+        path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), path.lstrip("/\\"))
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"Snapshot non trovato: {path}")
+
     df = pd.read_csv(path)
     required_cols = {"SepsisLabel", "macro_label"}
     missing = required_cols - set(df.columns)

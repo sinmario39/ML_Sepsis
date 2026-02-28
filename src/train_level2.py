@@ -7,7 +7,7 @@ from sklearn.tree import DecisionTreeClassifier
 from preprocessing import load_snapshot, split_train_test, split_level2
 from utils import eval_multiclass, tree_importances
 
-DATA_PATH = "../data/snapshot.csv"
+DATA_PATH = "/data/snapshot.csv"
 RANDOM_STATE = 42
 
 
