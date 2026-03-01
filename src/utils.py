@@ -29,6 +29,10 @@ def best_threshold_f1(y_true, y_proba):
     i = int(np.argmax(f1))
     return float(thresholds[i]), float(precision[i]), float(recall[i]), float(f1[i])
 
+ # Converte probabilità in predizione 0/1.
+def apply_threshold(y_proba, threshold):
+    return (np.asarray(y_proba) >= threshold).astype(int)
+
 def eval_multiclass(y_true, y_pred, labels=None, title=None):
     # Stampa macro-F1 + confusion matrix + report
     if title:
