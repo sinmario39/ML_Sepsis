@@ -1,11 +1,11 @@
 import os
 import pandas as pd
 from tqdm import tqdm
+from pathlib import Path
 
-DATA_PATH = "../data"
-
-print("Working directory:", os.getcwd())
-print("DATA_PATH assoluto:", os.path.abspath(DATA_PATH))
+# Prende la posizione del file corrente e costruisce il path per /data
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+DATA_PATH = PROJECT_ROOT / "data"
 
 def load_all_psv(data_path: str) -> pd.DataFrame:
     psv_files = []
@@ -19,10 +19,7 @@ def load_all_psv(data_path: str) -> pd.DataFrame:
             f"Nessun file .psv trovato sotto {os.path.abspath(data_path)}. "
             "Controlla che la cartella sia corretta e che i file abbiano estensione .psv."
         )
-    """
-    print("Trovati file .psv:", len(psv_files))
-    print("Esempio primi 5 file:", psv_files[:5])
-    """
+
     all_data = []
     for file_path in tqdm(psv_files, desc="Loading .psv"):
         df = pd.read_csv(file_path, sep="|")
@@ -128,26 +125,10 @@ if __name__ == "__main__":
 
         return "Stable"
 
-    # SPLIT
     snapshot_df["macro_label"] = snapshot_df.apply(assign_macro, axis=1)
 
     print(snapshot_df["macro_label"].value_counts())
     print(snapshot_df["macro_label"].value_counts(normalize=True) * 100)
-
-    from sklearn.model_selection import train_test_split
-
-    train_df, test_df = train_test_split(
-        snapshot_df,
-        test_size=0.2,
-        stratify=snapshot_df["macro_label"],
-        random_state=42
-    )
-
-    print("Train distribution:")
-    print(train_df["macro_label"].value_counts(normalize=True) * 100)
-
-    print("\nTest distribution:")
-    print(test_df["macro_label"].value_counts(normalize=True) * 100)
 
     # PULIZIA DATI
     # Rimozione Colonne Tecniche
@@ -162,17 +143,6 @@ if __name__ == "__main__":
 
     snapshot_df = snapshot_df.drop(columns=high_missing_cols)
 
-    """
-    snapshot_df = snapshot_df.drop(
-        columns=["resp_flag", "hemo_flag", "metab_flag"],
-        errors="ignore"
-    )
-    """
-
-    # Separazione Target e Feature
-    X = snapshot_df.drop(columns=["macro_label", "SepsisLabel"])
-    y_macro = snapshot_df["macro_label"]
-    y_sepsis = snapshot_df["SepsisLabel"]
     snapshot_df = snapshot_df.drop(
         columns=["resp_flag", "hemo_flag", "metab_flag"],
         errors="ignore"
@@ -181,6 +151,12 @@ if __name__ == "__main__":
     # Controllo
     print("Final shape:", snapshot_df.shape)
     print("Remaining columns:", snapshot_df.columns.tolist())
+
+    # Creazione Snapshot
+    output_path = DATA_PATH / "snapshot.csv"
+    snapshot_df.to_csv(output_path, index=False)
+
+    print("Snapshot created and saved in:", output_path)
 
 
 
