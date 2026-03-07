@@ -42,6 +42,11 @@ def main():
     X_train, y_train, X_test, y_test = split_level1(train_df, test_df)
 
     print("=== LEVEL 1 (Sepsis Vs Non-Sepsis) ===")
+    print("Train size:", X_train.shape, " Test size:", X_test.shape)
+    print("\nTrain label distribution (%):")
+    print((y_train.value_counts(normalize=True) * 100).round(2))
+    print("\nTest label distribution (%):")
+    print((y_test.value_counts(normalize=True) * 100).round(2))
 
     models = build_models()
 
