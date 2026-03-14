@@ -62,7 +62,7 @@ if __name__ == "__main__":
     print("\nSepsisLabel percentage:")
     print(snapshot_df["SepsisLabel"].value_counts(normalize=True, dropna=False) * 100)
 
-    #Q uesto serve per decidere quali feature tenere (es. teniamo quelle con <80% missing, o una soglia che decideremo).
+    #Questo serve per decidere quali feature tenere (es. teniamo quelle con <80% missing, o una soglia che decideremo).
     missing_pct = snapshot_df.isna().mean().sort_values(ascending=False) * 100
     print("\nMissing % per colonna (snapshot):")
     print(missing_pct)
