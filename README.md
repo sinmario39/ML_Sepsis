@@ -20,6 +20,7 @@ Users must comply with the original dataset license.
 ## Requirements
 - Python 3.14
 - pandas
+- tqdm
 - numpy
 - scikit-learn
 - matplotlib
