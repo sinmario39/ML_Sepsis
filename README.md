@@ -28,9 +28,9 @@ Users must comply with the original dataset license.
 - jupyter (optional, for notebook testing, install with `pip install jupyter`)
 
 Install dependencies with:  
-`pip install -r requirements.txt`  
+`pip install -r requirements.txt` 
 Or  
-`pip install numpy tqdm pandas matplotlib seaborn scikit-learn`  
+`pip install numpy tqdm pandas matplotlib seaborn scikit-learn` 
 
 ## Execution
 1. Download the PhysioNet dataset and place all `.psv` files inside the `data/` folder.
