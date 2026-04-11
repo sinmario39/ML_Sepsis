@@ -1,3 +1,4 @@
+import joblib
 from sklearn.pipeline import Pipeline
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler
@@ -59,6 +60,7 @@ def main():
         # Importanze solo per tree
         tree_importances(model, X_train.columns, top_k=15)
 
+        joblib.dump(model, "macro_model.pkl")
 
 if __name__ == "__main__":
     main()

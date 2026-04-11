@@ -1,4 +1,5 @@
 import numpy as np
+import joblib
 from sklearn.pipeline import Pipeline
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler
@@ -66,6 +67,8 @@ def main():
 
         custom_pred = (y_proba >= thr).astype(int)
         eval_binary(y_test, custom_pred, title=f"{name} | LEVEL 1 (custom threshold)")
+
+        joblib.dump(model, "sepsis_model.pkl")
 
 if __name__ == "__main__":
     main()
