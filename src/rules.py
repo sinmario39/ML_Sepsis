@@ -31,21 +31,29 @@ def normalize_score(score, max_score):
 
 def compute_sepsis_score(data):
     score = 0
-    max_score = 13  # somma pesi
+    max_score = 15  # somma pesi
 
     temp = safe_get(data, "Temp")
     hr = safe_get(data, "HR")
     resp = safe_get(data, "Resp")
     wbc = safe_get(data, "WBC")
+    creat = safe_get(data, "Creatinine")
     lactate = safe_get(data, "Lactate")
     sbp = safe_get(data, "SBP")
+    platelets = safe_get(data, "Platelets")
 
     score += add_score(temp is not None and (temp > 38 or temp < 36), 2)
-    score += add_score(hr is not None and hr > 90, 2)
+    score += add_score(hr is not None and hr > 100, 1)
     score += add_score(resp is not None and resp > 20, 2)
     score += add_score(wbc is not None and (wbc > 12000 or wbc < 4000), 2)
+    score += add_score(creat is not None and creat > 1.5, 1)
     score += add_score(lactate is not None and lactate > 2, 3)
     score += add_score(sbp is not None and sbp < 100, 2)
+    score += add_score(platelets is not None and platelets < 150000, 1)
+
+    # Combinazione avanzata delle soglie
+    if temp is not None and hr is not None:
+        score += add_score(temp > 38 and hr > 100, 2)
 
     return normalize_score(score, max_score)
 
@@ -55,12 +63,14 @@ def compute_sepsis_score(data):
 
 def compute_respiratory_score(data):
     score = 0
-    max_score = 7
+    max_score = 8
 
+    age = safe_get(data, "Age") # Età come fattore di rischio
     o2 = safe_get(data, "O2Sat")
     resp = safe_get(data, "Resp")
     hr = safe_get(data, "HR")
 
+    score += add_score(age is not None and age > 65, 1)
     score += add_score(o2 is not None and o2 < 92, 2)
     score += add_score(resp is not None and resp > 22, 2)
     score += add_score(hr is not None and hr > 100, 1)
@@ -73,15 +83,17 @@ def compute_respiratory_score(data):
 
 def compute_metabolic_score(data):
     score = 0
-    max_score = 7
+    max_score = 8
 
     glucose = safe_get(data, "Glucose")
-    creat = safe_get(data, "Creatine")
+    creat = safe_get(data, "Creatinine")
     lactate = safe_get(data, "Lactate")
+    bun = safe_get(data, "BUN")
 
-    score += add_score(glucose is not None and glucose > 180, 3)
-    score += add_score(creat is not None and creat > 1.5, 2)
+    score += add_score(glucose is not None and glucose > 125, 3)
+    score += add_score(creat is not None and creat > 1.2, 2)
     score += add_score(lactate is not None and lactate > 2, 1)
+    score += add_score(bun is not None and bun > 20, 1)
 
     return normalize_score(score, max_score)
 
@@ -91,7 +103,7 @@ def compute_metabolic_score(data):
 
 def compute_hemodynamic_score(data):
     score = 0
-    max_score = 7
+    max_score = 8
 
     hr = safe_get(data, "HR")
     dbp = safe_get(data, "DBP")
@@ -99,9 +111,11 @@ def compute_hemodynamic_score(data):
     map_val = safe_get(data, "MAP")
 
     score += add_score(hr is not None and (hr > 100 or hr < 60), 2)
-    score += add_score(dbp is not None and (dbp > 90 or dbp < 60), 2)
-    score += add_score(sbp is not None and (sbp > 140 or sbp < 90), 2)
-    score += add_score(map_val is not None and (map_val < 65 or map_val > 100), 1)
+    score += add_score(dbp is not None and (dbp > 90 or dbp < 60), 1)
+    score += add_score(sbp is not None and (sbp > 140 or sbp < 90), 1)
+    score += add_score(map_val is not None and (map_val < 65 or map_val > 100), 2)
+    if sbp is not None and hr is not None:
+        score += add_score(sbp < 90 and hr > 100, 2)
 
     return normalize_score(score, max_score)
 
@@ -111,19 +125,21 @@ def compute_hemodynamic_score(data):
 
 def compute_stable_score(data):
     score = 0
-    max_score = 5
+    max_score = 6
 
     temp = safe_get(data, "Temp")
     hr = safe_get(data, "HR")
     o2 = safe_get(data, "O2Sat")
     wbc = safe_get(data, "WBC")
     map = safe_get(data, "MAP")
+    resp = safe_get(data, "Resp")
 
     score += add_score(temp is not None and 36 <= temp <= 37.5, 1)
     score += add_score(hr is not None and (hr >= 60 or hr <= 100), 1)
     score += add_score(o2 is not None and o2 > 95, 1)
     score += add_score(wbc is not None and 4000 <= wbc <= 12000, 1)
     score += add_score(map is not None and 70 <= map < 90, 1)
+    score += add_score(resp is not None and resp < 20, 1)
 
     return normalize_score(score, max_score)
 
