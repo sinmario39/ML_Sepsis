@@ -41,19 +41,21 @@ def make_decision(prob_sepsis, macro_pred, scores):
     # SCELTA MIGLIORE
     # -------------------------
 
-    best_class = max(other_scores, key=other_scores.get)
-    best_score = other_scores[best_class]
+    # Ordina le classi per punteggio
+    sorted_classes = sorted(other_scores.items(), key=lambda x: x[1], reverse=True)
+    best_class, best_score = sorted_classes[0]
 
-    # Gestione incertezza
-    sorted_scores = sorted(other_scores.values(), reverse=True)
+    # Seconda migliore (se esiste)
+    second_class, second_score = (None, None)
+    if len(sorted_classes) > 1:
+        second_class, second_score = sorted_classes[1]
 
-    if len(sorted_scores) > 1:
-        gap = sorted_scores[0] - sorted_scores[1]
-    else:
-        gap = 1
+    # Gap tra primo e secondo
+    gap = best_score - (second_score if second_score is not None else 0)
 
-    if gap < 0.1:
-        return best_class, {
+    # Caso incertezza
+    if gap < 0.1 and second_class is not None:
+        return [best_class, second_class], {
             "confidence": best_score,
             "reason": "Low confidence - multiple possible conditions"
         }
