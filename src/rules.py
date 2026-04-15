@@ -44,7 +44,7 @@ def age_modifier(data):
 
 def compute_sepsis_score(data):
     score = 0
-    max_score = 15  # somma pesi
+    max_score = 17  # somma pesi
 
     temp = safe_get(data, "Temp")
     hr = safe_get(data, "HR")
@@ -61,13 +61,13 @@ def compute_sepsis_score(data):
     score += add_score(wbc is not None and (wbc > 12000 or wbc < 4000), 2)
     score += add_score(creat is not None and creat > 1.5, 1)
     score += add_score(lactate is not None and lactate > 2, 3)
-    score += add_score(sbp is not None and sbp < 100, 2)
+    score += add_score(sbp is not None and sbp < 90, 2)
     score += add_score(platelets is not None and platelets < 150000, 1)
     score += age_modifier(data)
 
-    # Combinazione avanzata delle soglie
+    # Regola combinata delle soglie (Shock Settico)
     if temp is not None and hr is not None:
-        score += add_score(temp > 38 and hr > 100, 2)
+        score += add_score((temp > 38 or temp < 36) and hr > 100 and resp > 20 and sbp < 90, 3)
 
     return normalize_score(score, max_score)
 
@@ -147,7 +147,7 @@ def compute_stable_score(data):
     o2 = safe_get(data, "O2Sat")
     glucose = safe_get(data, "Glucose")
     wbc = safe_get(data, "WBC")
-    map = safe_get(data, "MAP")
+    map_val = safe_get(data, "MAP")
     resp = safe_get(data, "Resp")
 
     score += add_score(temp is not None and 36 <= temp <= 37.5, 1)
@@ -155,7 +155,7 @@ def compute_stable_score(data):
     score += add_score(o2 is not None and o2 > 95, 1)
     score += add_score(glucose is not None and (glucose > 70 or glucose < 125), 1)
     score += add_score(wbc is not None and 4000 <= wbc <= 12000, 1)
-    score += add_score(map is not None and 70 <= map < 90, 1)
+    score += add_score(map_val is not None and 70 <= map_val < 90, 1)
     score += add_score(resp is not None and resp < 20, 1)
 
     return normalize_score(score, max_score)

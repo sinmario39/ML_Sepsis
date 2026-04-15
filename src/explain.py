@@ -1,8 +1,5 @@
 
 def generate_explanation(prob_sepsis, macro_pred, scores, patient_data, decision_output):
-    """
-    decision_output: può essere stringa o lista (top-2)
-    """
 
     clinical_findings = []
 
@@ -20,23 +17,25 @@ def generate_explanation(prob_sepsis, macro_pred, scores, patient_data, decision
     lactate = patient_data.get("Lactate")
     sbp = patient_data.get("SBP")
     dbp = patient_data.get("DBP")
-    map =patient_data.get("MAP")
+    map_val = patient_data.get("MAP")
     platelets = patient_data.get("Platelets")
     bun = patient_data.get("BUN")
 
     # -------------------------
-    # COSTRUZIONE EVIDENZE CLINICHE
+    # EVIDENZE CLINICHE
     # -------------------------
 
-    if temp is not None and (temp > 38 or temp < 36):
-        clinical_findings.append("temperatura anomala: ")
-        if temp > 38: clinical_findings.append("febbre")
-        if temp < 36: clinical_findings.append("ipotermia")
+    if temp is not None:
+        if temp > 38:
+            clinical_findings.append(f"febbre (Temp = {temp}°C)")
+        elif temp < 36:
+            clinical_findings.append(f"ipotermia (Temp = {temp}°C)")
 
-    if hr is not None and hr > 100:
-        clinical_findings.append("tachicardia")
-    if hr is not None and hr < 60:
-        clinical_findings.append("bradicardia")
+    if hr is not None:
+        if hr > 100:
+            clinical_findings.append(f"tachicardia (HR = {hr} bpm)")
+        elif hr < 60:
+            clinical_findings.append(f"bradicardia (HR = {hr} bpm)")
 
     if resp is not None and resp > 20:
         clinical_findings.append("frequenza respiratoria elevata")
@@ -45,37 +44,53 @@ def generate_explanation(prob_sepsis, macro_pred, scores, patient_data, decision
         clinical_findings.append("ipossia")
 
     if wbc is not None and (wbc > 12000 or wbc < 4000):
-        clinical_findings.append("livello di globuli bianchi alterato")
+        clinical_findings.append("globuli bianchi alterati")
 
     if platelets is not None and platelets < 150000:
-        clinical_findings.append("livello di piastrine basso")
+        clinical_findings.append("piastrine basse")
 
-    if glucose is not None and glucose > 125: clinical_findings.append("iperglicemia")
-    if glucose is not None and glucose < 55: clinical_findings.append("ipoglicemia")
+    if glucose is not None:
+        if glucose > 125:
+            clinical_findings.append("iperglicemia")
+        elif glucose < 55:
+            clinical_findings.append("ipoglicemia")
 
     if creat is not None and creat > 1.2:
-        clinical_findings.append("livelli di creatinina elevati")
+        clinical_findings.append("creatinina elevata")
 
     if lactate is not None and lactate > 2:
-        clinical_findings.append("livelli di lattato elevati")
+        clinical_findings.append(f"lattato elevato (Lactate = {lactate})")
 
-    if sbp is not None and sbp > 140:
-        clinical_findings.append("pressione sistolica elevata")
-    if sbp is not None and sbp < 90:
-        clinical_findings.append("pressione sistolica bassa")
-    if dbp is not None and dbp > 90:
-        clinical_findings.append("pressione diastolica elevata")
-    if dbp is not None and dbp < 60:
-        clinical_findings.append("pressione diastolica bassa")
+    if sbp is not None:
+        if sbp > 140:
+            clinical_findings.append(f"ipertensione sistolica (SBP = {sbp} mmHg)")
+        elif sbp < 90:
+            clinical_findings.append(f"ipotensione sistolica (SBP = {sbp} mmHg)")
 
-    if map is not None and map > 100: clinical_findings.append("pressione media elevata - rischio di ipertensione")
-    if resp is not None and map < 65: clinical_findings.append("pressione media bassa - rischio di ipoperfusione")
+    if dbp is not None:
+        if dbp > 90:
+            clinical_findings.append(f"ipertensione diastolica (DBP = {dbp} mmHg)")
+        elif dbp < 60:
+            clinical_findings.append(f"ipotensione diastolica (DBP = {dbp} mmHg)")
+
+    if map_val is not None:
+        if map_val > 100:
+            clinical_findings.append("pressione media elevata")
+        elif map_val < 65:
+            clinical_findings.append("possibile ipoperfusione")
 
     if bun is not None and bun > 20:
-        clinical_findings.append("quantità elevata di azoto ureico")
+        clinical_findings.append("BUN elevato")
+
+    # Regola combinata (Shock Settico)
+    if sbp is not None and hr is not None:
+        if (temp > 38 or temp < 36) and hr > 100 and resp > 20 and sbp < 90:
+            clinical_findings.append("stato di shock settico")
+
+
 
     # -------------------------
-    # INTERPRETAZIONE DECISIONE
+    # DECISIONE
     # -------------------------
 
     if isinstance(decision_output, list):
@@ -86,7 +101,7 @@ def generate_explanation(prob_sepsis, macro_pred, scores, patient_data, decision
         uncertainty_text = ""
 
     # -------------------------
-    # COSTRUZIONE SPIEGAZIONE
+    # OUTPUT
     # -------------------------
 
     explanation = diagnosis_text + ".\n\n"
@@ -97,14 +112,19 @@ def generate_explanation(prob_sepsis, macro_pred, scores, patient_data, decision
             explanation += f"- {f}\n"
 
     explanation += "\n"
-
     explanation += f"Probabilità stimata di sepsi: {round(prob_sepsis, 2)}.\n"
-    explanation += f"La decisione combina modello di machine learning e regole cliniche.\n"
+    explanation += "La decisione combina modello di machine learning e regole cliniche.\n"
 
     if macro_pred:
         explanation += f"Il modello multiclasse suggerisce: {macro_pred}.\n"
 
     if uncertainty_text:
         explanation += "\n" + uncertainty_text
+
+    sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+
+    explanation += "\nCondizioni più probabili secondo il sistema a regole:\n"
+    for k, v in sorted_scores[:2]:
+        explanation += f"- {k} (score: {round(v, 2)})\n"
 
     return explanation
