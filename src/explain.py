@@ -37,8 +37,11 @@ def generate_explanation(prob_sepsis, macro_pred, scores, patient_data, decision
         elif hr < 60:
             clinical_findings.append(f"bradicardia (HR = {hr} bpm)")
 
-    if resp is not None and resp > 20:
-        clinical_findings.append("frequenza respiratoria elevata")
+    if resp is not None:
+        if resp > 20:
+            clinical_findings.append("frequenza respiratoria elevata")
+        elif resp < 12:
+            clinical_findings.append("frequenza respiratoria bassa")
 
     if o2 is not None and o2 < 92:
         clinical_findings.append("ipossia")
