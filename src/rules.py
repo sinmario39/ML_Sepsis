@@ -83,9 +83,9 @@ def compute_respiratory_score(data):
     resp = safe_get(data, "Resp")
     hr = safe_get(data, "HR")
 
-    score += add_score(o2 is not None and o2 < 92, 2)
-    score += add_score(resp is not None and resp > 22, 2)
-    score += add_score(hr is not None and hr > 100, 1)
+    score += add_score(o2 is not None and o2 < 92, 3)
+    score += add_score(resp is not None and (resp > 20 or resp < 12), 3)
+    score += add_score(hr is not None and hr > 100, 2)
     score += age_modifier(data)
 
     return normalize_score(score, max_score)
