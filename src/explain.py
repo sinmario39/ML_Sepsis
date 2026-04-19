@@ -1,5 +1,5 @@
 
-def generate_explanation(prob_sepsis, macro_pred, scores, patient_data, decision_output):
+def generate_explanation(prob_sepsis, macro_pred, scores, patient_data, decision_output, decision_info):
 
     clinical_findings = []
 
@@ -126,5 +126,9 @@ def generate_explanation(prob_sepsis, macro_pred, scores, patient_data, decision
     explanation += "\nCondizioni più probabili secondo il sistema a regole:\n"
     for k, v in sorted_scores[:2]:
         explanation += f"- {k} (score: {round(v, 2)})\n"
+
+    if decision_info:
+        explanation += f"\nMotivazione decisione: {decision_info.get('reason', '')}\n"
+        explanation += f"Confidenza: {round(decision_info.get('confidence', 0), 2)}\n"
 
     return explanation
