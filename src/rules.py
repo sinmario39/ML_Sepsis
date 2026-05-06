@@ -55,7 +55,7 @@ def compute_sepsis_score(data):
     sbp = safe_get(data, "SBP")
     platelets = safe_get(data, "Platelets")
 
-    score += add_score(temp is not None and (temp > 38 or temp < 36), 2)
+    score += add_score(temp is not None and (temp > 38 or temp < 36), 1)
     score += add_score(hr is not None and hr > 100, 1)
     score += add_score(resp is not None and resp > 20, 2)
     score += add_score(wbc is not None and (wbc > 12000 or wbc < 4000), 2)
@@ -85,7 +85,7 @@ def compute_respiratory_score(data):
 
     score += add_score(o2 is not None and o2 < 92, 3)
     score += add_score(resp is not None and (resp > 20 or resp < 12), 3)
-    score += add_score(hr is not None and hr > 100, 2)
+    score += add_score(hr is not None and hr > 100, 1)
     score += age_modifier(data)
 
     return normalize_score(score, max_score)
@@ -103,7 +103,7 @@ def compute_metabolic_score(data):
     lactate = safe_get(data, "Lactate")
     bun = safe_get(data, "BUN")
 
-    score += add_score(glucose is not None and (glucose > 125 or glucose < 55), 3)
+    score += add_score(glucose is not None and (glucose > 125 or glucose < 55), 2)
     score += add_score(creat is not None and creat > 1.2, 2)
     score += add_score(lactate is not None and lactate > 2, 1)
     score += add_score(bun is not None and bun > 20, 1)
