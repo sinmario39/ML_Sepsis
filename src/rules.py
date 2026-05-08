@@ -151,12 +151,12 @@ def compute_stable_score(data):
     resp = safe_get(data, "Resp")
 
     score += add_score(temp is not None and 36 <= temp <= 37.5, 1)
-    score += add_score(hr is not None and (hr >= 60 or hr <= 100), 1)
+    score += add_score(hr is not None and 60 <= hr <= 100, 1)
     score += add_score(o2 is not None and o2 > 95, 1)
-    score += add_score(glucose is not None and (glucose > 70 or glucose < 125), 1)
+    score += add_score(glucose is not None and 70 < glucose < 125, 1)
     score += add_score(wbc is not None and 4000 <= wbc <= 12000, 1)
     score += add_score(map_val is not None and 70 <= map_val < 90, 1)
-    score += add_score(resp is not None and resp < 20, 1)
+    score += add_score(resp is not None and 12 < resp < 20, 1)
 
     return normalize_score(score, max_score)
 

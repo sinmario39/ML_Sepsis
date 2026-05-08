@@ -23,7 +23,7 @@ def make_decision(prob_sepsis, macro_pred, scores):
     # -------------------------
 
     # Sepsi
-    if final_sepsis > 0.7:
+    if final_sepsis > 0.7: # La Sepsi ha priorità clinica elevata
         return "sepsis", {
             "confidence": final_sepsis,
             "reason": "High sepsis risk"
@@ -33,9 +33,20 @@ def make_decision(prob_sepsis, macro_pred, scores):
     other_scores = {
         k: v for k, v in scores.items() if k != "sepsis" # Prende "scores" e rimuove sepsis
     }
+
     # Boost della predizione ML multiclasse
+    # Rafforziamo la classe suggerita dal modello ML, evidenziando il contributo del modello statistico
     if macro_pred in other_scores:
         other_scores[macro_pred] += 0.1
+    else:
+        # Penalizzazione in caso di incoerenza tra le predizioni
+        for k in other_scores:
+            other_scores[k] *= 0.95
+
+    # Penalizzazione dello stato "Stable" in caso di segnali clinici anomali
+    if "stable" in other_scores:
+        if any(v > 0.5 for k, v in other_scores.items() if k != "stable"):
+            other_scores["stable"] *= 0.7
 
     # -------------------------
     # SCELTA MIGLIORE
@@ -53,8 +64,8 @@ def make_decision(prob_sepsis, macro_pred, scores):
     # Gap tra primo e secondo
     gap = best_score - (second_score if second_score is not None else 0)
 
-    # Caso incertezza
-    if gap < 0.1 and second_class is not None:
+    # Caso incertezza (Caso di punteggi vicini)
+    if gap < 0.1 and second_class is not None: # Il sistema restituisce due diagnosi probabili simulando l'incertezza medica
         return [best_class, second_class], {
             "confidence": best_score,
             "reason": "Low confidence - multiple possible conditions"
