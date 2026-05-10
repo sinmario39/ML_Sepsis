@@ -16,14 +16,39 @@ def make_decision(prob_sepsis, macro_pred, scores):
     # -------------------------
 
     sepsis_score = scores.get("sepsis", 0)
-    final_sepsis = 0.8 * prob_sepsis + 0.2 * sepsis_score
+    # Pesi adattivi dinamici
+    if sepsis_score > 0.7:
+        ml_weight = 0.7
+        rule_weight = 0.3
+    else:
+        ml_weight = 0.8
+        rule_weight = 0.2
+
+    # Fusione
+    final_sepsis = (
+            ml_weight * prob_sepsis +
+            rule_weight * sepsis_score
+    )
+
+    # Rafforzamento clinico
+    if sepsis_score > 0.6 and prob_sepsis > 0.5:
+        final_sepsis += 0.1
+
+    # Limitazione dei valori superiori ad 1
+    final_sepsis = min(final_sepsis, 1.0)
 
     # -------------------------
     # PRIORITÀ CLINICHE
     # -------------------------
 
     # Sepsi
-    if final_sepsis > 0.7: # La Sepsi ha priorità clinica elevata
+    # La Sepsi ha priorità clinica elevata
+    if final_sepsis > 0.85:
+        return "sepsis", {
+            "confidence": final_sepsis,
+            "reason": "Critical sepsis indicators detected"
+        }
+    if final_sepsis > 0.7:
         return "sepsis", {
             "confidence": final_sepsis,
             "reason": "High sepsis risk"

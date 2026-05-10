@@ -66,7 +66,7 @@ def compute_sepsis_score(data):
     score += age_modifier(data)
 
     # Regola combinata delle soglie (Shock Settico)
-    if temp is not None and hr is not None:
+    if temp is not None and hr is not None and resp is not None and sbp is not None:
         score += add_score((temp > 38 or temp < 36) and hr > 100 and resp > 20 and sbp < 90, 3)
 
     return normalize_score(score, max_score)
@@ -77,13 +77,16 @@ def compute_sepsis_score(data):
 
 def compute_respiratory_score(data):
     score = 0
-    max_score = 8
+    max_score = 9
 
     o2 = safe_get(data, "O2Sat")
     resp = safe_get(data, "Resp")
     hr = safe_get(data, "HR")
 
-    score += add_score(o2 is not None and o2 < 92, 3)
+    if o2 is not None and o2 < 88:
+        score += 4
+    elif o2 is not None and o2 < 92:
+        score += 3
     score += add_score(resp is not None and (resp > 20 or resp < 12), 3)
     score += add_score(hr is not None and hr > 100, 1)
     score += age_modifier(data)
@@ -96,7 +99,7 @@ def compute_respiratory_score(data):
 
 def compute_metabolic_score(data):
     score = 0
-    max_score = 8
+    max_score = 9
 
     glucose = safe_get(data, "Glucose")
     creat = safe_get(data, "Creatinine")
@@ -105,7 +108,10 @@ def compute_metabolic_score(data):
 
     score += add_score(glucose is not None and (glucose > 125 or glucose < 55), 2)
     score += add_score(creat is not None and creat > 1.2, 2)
-    score += add_score(lactate is not None and lactate > 2, 1)
+    if lactate is not None and lactate > 4:
+        score += 3
+    elif lactate is not None and lactate > 2:
+        score += 2
     score += add_score(bun is not None and bun > 20, 1)
     score += age_modifier(data)
 
@@ -117,7 +123,7 @@ def compute_metabolic_score(data):
 
 def compute_hemodynamic_score(data):
     score = 0
-    max_score = 8
+    max_score = 9
 
     hr = safe_get(data, "HR")
     sbp = safe_get(data, "SBP")
@@ -125,7 +131,7 @@ def compute_hemodynamic_score(data):
     map_val = safe_get(data, "MAP")
 
     score += add_score(hr is not None and (hr > 100 or hr < 60), 2)
-    score += add_score(sbp is not None and (sbp > 140 or sbp < 90), 1)
+    score += add_score(sbp is not None and (sbp > 140 or sbp < 90), 2)
     score += add_score(dbp is not None and (dbp > 90 or dbp < 60), 1)
     score += add_score(map_val is not None and (map_val < 65 or map_val > 100), 2)
     if sbp is not None and hr is not None:
@@ -152,7 +158,7 @@ def compute_stable_score(data):
 
     score += add_score(temp is not None and 36 <= temp <= 37.5, 1)
     score += add_score(hr is not None and 60 <= hr <= 100, 1)
-    score += add_score(o2 is not None and o2 > 95, 1)
+    score += add_score(o2 is not None and  o2 >= 95, 1)
     score += add_score(glucose is not None and 70 < glucose < 125, 1)
     score += add_score(wbc is not None and 4000 <= wbc <= 12000, 1)
     score += add_score(map_val is not None and 70 <= map_val < 90, 1)
