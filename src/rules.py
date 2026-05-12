@@ -24,7 +24,6 @@ def normalize_score(score, max_score):
         return 0
     return score / max_score
 
-
 def age_modifier(data):
     age = safe_get(data, "Age")
 
@@ -44,7 +43,7 @@ def age_modifier(data):
 
 def compute_sepsis_score(data):
     score = 0
-    max_score = 17  # somma pesi
+    max_score = 18  # somma massima dei pesi
 
     temp = safe_get(data, "Temp")
     hr = safe_get(data, "HR")
@@ -67,7 +66,7 @@ def compute_sepsis_score(data):
 
     # Regola combinata delle soglie (Shock Settico)
     if temp is not None and hr is not None and resp is not None and sbp is not None:
-        score += add_score((temp > 38 or temp < 36) and hr > 100 and resp > 20 and sbp < 90, 3)
+        score += add_score((temp > 38 or temp < 36) and hr > 100 and resp > 20 and sbp < 90, 4)
 
     return normalize_score(score, max_score)
 
@@ -83,10 +82,10 @@ def compute_respiratory_score(data):
     resp = safe_get(data, "Resp")
     hr = safe_get(data, "HR")
 
-    if o2 is not None and o2 < 88:
-        score += 4
-    elif o2 is not None and o2 < 92:
-        score += 3
+    if o2 is not None:
+        score += add_score(o2 < 88, 4)
+    elif o2 is not None:
+        score += add_score(o2 < 92, 4)
     score += add_score(resp is not None and (resp > 20 or resp < 12), 3)
     score += add_score(hr is not None and hr > 100, 1)
     score += age_modifier(data)
@@ -108,10 +107,10 @@ def compute_metabolic_score(data):
 
     score += add_score(glucose is not None and (glucose > 125 or glucose < 55), 2)
     score += add_score(creat is not None and creat > 1.2, 2)
-    if lactate is not None and lactate > 4:
-        score += 3
-    elif lactate is not None and lactate > 2:
-        score += 2
+    if lactate is not None:
+        score += add_score(lactate > 4, 3)
+    elif lactate is not None:
+        score += add_score(lactate > 2, 2)
     score += add_score(bun is not None and bun > 20, 1)
     score += age_modifier(data)
 

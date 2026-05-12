@@ -43,8 +43,11 @@ def generate_explanation(prob_sepsis, macro_pred, scores, patient_data, decision
         elif resp < 12:
             clinical_findings.append("frequenza respiratoria bassa")
 
-    if o2 is not None and o2 < 92:
-        clinical_findings.append("ipossia")
+    if o2 is not None:
+        if o2 < 88:
+            clinical_findings.append("ipossia grave")
+        elif o2 < 92:
+            clinical_findings.append("ipossia")
 
     if wbc is not None and (wbc > 12000 or wbc < 4000):
         clinical_findings.append("globuli bianchi alterati")
@@ -86,7 +89,7 @@ def generate_explanation(prob_sepsis, macro_pred, scores, patient_data, decision
         clinical_findings.append("BUN elevato")
 
     # Regola combinata (Shock Settico)
-    if sbp is not None and hr is not None:
+    if temp is not None and hr is not None and resp is not None and sbp is not None:
         if (temp > 38 or temp < 36) and hr > 100 and resp > 20 and sbp < 90:
             clinical_findings.append("stato di shock settico")
 
