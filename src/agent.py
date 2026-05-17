@@ -30,51 +30,62 @@ class MedicalAgent:
             explanation: stringa spiegazione
         """
 
+        try: # Gestione errori
+
         # -------------------------
         # 1. PREDIZIONE ML
         # -------------------------
 
-        # Otteniamo probabilità di sepsi e predizione multiclasse
-        prob_sepsis, macro_pred = self.model.predict(patient_data)
+            # Otteniamo probabilità di sepsi e predizione multiclasse
+            prob_sepsis, macro_pred = self.model.predict(patient_data)
 
         # -------------------------
         # 2. SISTEMA A REGOLE
         # -------------------------
 
-        # Calcolo punteggi per ogni condizione
-        scores = compute_all_scores(patient_data)
+            # Calcolo punteggi per ogni condizione
+            scores = compute_all_scores(patient_data)
 
         # -------------------------
         # 3. DECISION ENGINE
         # -------------------------
 
-        # Combina ML e regole
-        diagnosis, decision_info = make_decision(
-            prob_sepsis,
-            macro_pred,
-            scores
-        )
+            # Combina ML e regole
+            diagnosis, decision_info = make_decision(
+                prob_sepsis,
+                macro_pred,
+                scores
+            )
 
         # -------------------------
         # 4. SPIEGAZIONE
         # -------------------------
 
-        explanation = generate_explanation(
-            prob_sepsis,
-            macro_pred,
-            scores,
-            patient_data,
-            diagnosis,
-            decision_info
-        )
+            explanation = generate_explanation(
+                prob_sepsis,
+                macro_pred,
+                scores,
+                patient_data,
+                diagnosis,
+                decision_info
+            )
 
         # -------------------------
         # 5. OUTPUT FINALE
         # -------------------------
 
-        return {
-            "diagnosis": diagnosis,
-            "confidence": decision_info["confidence"],
-            "reason": decision_info["reason"],
-            "explanation": explanation
-        }
+            return {
+                "diagnosis": diagnosis,
+                "confidence": decision_info["confidence"],
+                "reason": decision_info["reason"],
+                "explanation": explanation,
+                "scores": scores
+            }
+
+        except Exception as e:
+            return {
+                "diagnosis": "error",
+                "confidence": 0,
+                "reason": "Evaluation failed",
+                "explanation": str(e)
+            }
